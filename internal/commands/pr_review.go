@@ -25,6 +25,7 @@ func NewPRReviewCommand(deps Dependencies) *cobra.Command {
 				base = "origin/main"
 			}
 
+			deps.Logger.Info(cmd, "Calculating diff against %s. Time to expose questionable decisions.", base)
 			diff, err := deps.Git.Diff(base + "...HEAD")
 			if err != nil {
 				return err
@@ -37,12 +38,17 @@ func NewPRReviewCommand(deps Dependencies) *cobra.Command {
 			ctx, cancel := context.WithTimeout(cmd.Context(), deps.Config.Timeout)
 			defer cancel()
 
-			ans, err := deps.LLM.Generate(ctx, textutil.Choose(model, deps.Config.ModelReason), prompt)
+			modelUse := textutil.Choose(model, deps.Config.ModelReason)
+			deps.Logger.Info(cmd, "Deploying model %s to perform a code review that actually reads the diff.", modelUse)
+			ans, err := deps.LLM.Generate(ctx, modelUse, prompt)
 			if err != nil {
 				return err
 			}
 
 			_, err = cmd.OutOrStdout().Write([]byte(ans))
+			if err == nil {
+				deps.Logger.Info(cmd, "Review complete. Remember, sarcasm is my love language.")
+			}
 			return err
 		},
 	}

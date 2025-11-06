@@ -19,6 +19,7 @@ func NewCommitCommand(deps Dependencies) *cobra.Command {
 		Use:   "llm-commit",
 		Short: "Generate a Conventional Commit message from staged changes",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			deps.Logger.Info(cmd, "Evaluating your staged diff. Contain your anticipation.")
 			diff, err := deps.Git.Diff("--staged")
 			if err != nil {
 				return err
@@ -31,12 +32,15 @@ func NewCommitCommand(deps Dependencies) *cobra.Command {
 			ctx, cancel := context.WithTimeout(cmd.Context(), deps.Config.Timeout)
 			defer cancel()
 
-			ans, err := deps.LLM.Generate(ctx, textutil.Choose(model, deps.Config.ModelGeneral), prompt)
+			modelUse := textutil.Choose(model, deps.Config.ModelGeneral)
+			deps.Logger.Info(cmd, "Summoning model %s to translate chaos into convention.", modelUse)
+			ans, err := deps.LLM.Generate(ctx, modelUse, prompt)
 			if err != nil {
 				return err
 			}
 
 			fmt.Fprintln(cmd.OutOrStdout(), strings.TrimSpace(ans))
+			deps.Logger.Info(cmd, "Commit message prepared. Praise can be mailed to apartment 4A.")
 			return nil
 		},
 	}

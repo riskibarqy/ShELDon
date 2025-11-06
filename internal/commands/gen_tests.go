@@ -28,6 +28,7 @@ func NewGenTestsCommand(deps Dependencies) *cobra.Command {
 				return errors.New("--file and --func are required")
 			}
 
+			deps.Logger.Info(cmd, "Initiating surgical extraction of %s from %s. Please refrain from breathing loudly.", fn, file)
 			src, err := deps.Files.Read(file)
 			if err != nil {
 				return err
@@ -37,12 +38,14 @@ func NewGenTestsCommand(deps Dependencies) *cobra.Command {
 			if code == "" {
 				return fmt.Errorf("function %s not found in %s", fn, file)
 			}
+			deps.Logger.Info(cmd, "Function located. Astonishing what order can accomplish.")
 
 			prompt := fmt.Sprintf("Write Go table-driven tests for this function. Use testing and testify. Keep names clear.\n\n%s", code)
 			ctx, cancel := context.WithTimeout(cmd.Context(), deps.Config.Timeout)
 			defer cancel()
 
 			modelToUse := textutil.Choose(model, deps.Config.ModelReason)
+			deps.Logger.Info(cmd, "Consulting model %s via Ollama. Try not to blink.", modelToUse)
 			ans, err := deps.LLM.Generate(ctx, modelToUse, prompt)
 			if err != nil {
 				return err
@@ -51,7 +54,11 @@ func NewGenTestsCommand(deps Dependencies) *cobra.Command {
 			if out == "" {
 				out = fmt.Sprintf("%s_test.go", strings.ToLower(fn))
 			}
-			return deps.Files.WriteFile(out, textutil.NormalizeCode(ans))
+			if err := deps.Files.WriteFile(out, textutil.NormalizeCode(ans)); err != nil {
+				return err
+			}
+			deps.Logger.Info(cmd, "Tests written to %s. My superiority remains statistically significant.", out)
+			return nil
 		},
 	}
 

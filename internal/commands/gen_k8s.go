@@ -34,6 +34,7 @@ func NewGenK8sCommand(deps Dependencies) *cobra.Command {
 				return errors.New("--app is required")
 			}
 
+			deps.Logger.Info(cmd, "Calibrating a Kubernetes manifest for %s. Let us impose order on chaos.", app)
 			prompt := fmt.Sprintf("Write a Kubernetes Deployment + HPA for a Go API. App=%s.\nConstraints: containerPort %d, requests %s/%s, limits %s/%s, HPA on CPU %d%%, min %d max %d. Include liveness/readiness on /healthz. Return only YAML.",
 				app, port, cpuReq, memReq, cpuLim, memLim, cpuTarget, minReplicas, maxReplicas,
 			)
@@ -41,7 +42,9 @@ func NewGenK8sCommand(deps Dependencies) *cobra.Command {
 			ctx, cancel := context.WithTimeout(cmd.Context(), deps.Config.Timeout)
 			defer cancel()
 
-			ans, err := deps.LLM.Generate(ctx, textutil.Choose(model, deps.Config.ModelGeneral), prompt)
+			modelUse := textutil.Choose(model, deps.Config.ModelGeneral)
+			deps.Logger.Info(cmd, "Model %s engaged to blueprint your cluster dreams.", modelUse)
+			ans, err := deps.LLM.Generate(ctx, modelUse, prompt)
 			if err != nil {
 				return err
 			}
@@ -49,7 +52,11 @@ func NewGenK8sCommand(deps Dependencies) *cobra.Command {
 			if out == "" {
 				out = "k8s.yaml"
 			}
-			return deps.Files.WriteFile(out, ans)
+			if err := deps.Files.WriteFile(out, ans); err != nil {
+				return err
+			}
+			deps.Logger.Info(cmd, "Manifest saved to %s. You're welcome, Kubernetes.", out)
+			return nil
 		},
 	}
 

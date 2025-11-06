@@ -26,12 +26,15 @@ func NewCheckContractCommand(deps Dependencies) *cobra.Command {
 				return errors.New("--spec is required")
 			}
 
+			deps.Logger.Info(cmd, "Loading API spec from %s. Fingers crossed it's more coherent than most humans.", specPath)
 			spec, err := deps.Files.Read(specPath)
 			if err != nil {
 				return err
 			}
+			deps.Logger.Info(cmd, "Spec length logged: %d bytes. Impressive, or perhaps just verbose.", len(spec))
 
 			scanner := analysis.NewImplScanner(deps.Files)
+			deps.Logger.Info(cmd, "Scanning implementation directory %s for suspicious handlers.", implDir)
 			snippets, err := scanner.Scan(implDir)
 			if err != nil {
 				return err
@@ -41,12 +44,17 @@ func NewCheckContractCommand(deps Dependencies) *cobra.Command {
 			ctx, cancel := context.WithTimeout(cmd.Context(), deps.Config.Timeout)
 			defer cancel()
 
-			ans, err := deps.LLM.Generate(ctx, textutil.Choose(model, deps.Config.ModelReason), prompt)
+			modelUse := textutil.Choose(model, deps.Config.ModelReason)
+			deps.Logger.Info(cmd, "Interrogating model %s for contractual discrepancies.", modelUse)
+			ans, err := deps.LLM.Generate(ctx, modelUse, prompt)
 			if err != nil {
 				return err
 			}
 
 			_, err = cmd.OutOrStdout().Write([]byte(ans))
+			if err == nil {
+				deps.Logger.Info(cmd, "Contract audit complete. Someone owes me a spot on their sprint retro.")
+			}
 			return err
 		},
 	}
