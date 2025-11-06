@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 
 	"github.com/spf13/cobra"
 
@@ -19,6 +20,9 @@ func NewExplainLogsCommand(deps Dependencies) *cobra.Command {
 		Use:   "explain-logs",
 		Short: "Diagnose logs and propose next debugging steps",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if (path == "" || path == "-") && deps.Files.IsInteractive() {
+				return errors.New("no logs provided; use --in <file> or pipe log output")
+			}
 			deps.Logger.Info(cmd, "Collecting logs from %s. Drama inevitably ensues.", path)
 			logs, err := deps.Files.Read(path)
 			if err != nil {

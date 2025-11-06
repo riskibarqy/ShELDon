@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 
 	"github.com/spf13/cobra"
 
@@ -19,6 +20,9 @@ func NewLintFixesCommand(deps Dependencies) *cobra.Command {
 		Use:   "lint-fixes",
 		Short: "Propose smallest code changes for golangci-lint findings",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if (path == "" || path == "-") && deps.Files.IsInteractive() {
+				return errors.New("no lint findings provided; pipe golangci-lint output or pass --in <file>")
+			}
 			deps.Logger.Info(cmd, "Reading lint findings from %s. I do love enumerating flaws.", path)
 			report, err := deps.Files.Read(path)
 			if err != nil {

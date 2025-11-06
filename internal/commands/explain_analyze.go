@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 
 	"github.com/spf13/cobra"
 
@@ -19,6 +20,9 @@ func NewExplainAnalyzeCommand(deps Dependencies) *cobra.Command {
 		Use:   "explain-analyze",
 		Short: "Explain a PostgreSQL EXPLAIN ANALYZE plan and suggest indexes/rewrite",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if (path == "" || path == "-") && deps.Files.IsInteractive() {
+				return errors.New("no plan provided; pipe EXPLAIN ANALYZE output or use --in <file>")
+			}
 			deps.Logger.Info(cmd, "Acquiring EXPLAIN ANALYZE output from %s. I hope it brought a bibliography.", path)
 			plan, err := deps.Files.Read(path)
 			if err != nil {

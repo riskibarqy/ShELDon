@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 
 	"github.com/spf13/cobra"
 
@@ -19,6 +20,9 @@ func NewReviewMigrationCommand(deps Dependencies) *cobra.Command {
 		Use:   "review-migration",
 		Short: "Review a Postgres migration for safety/downtime risks",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if (path == "" || path == "-") && deps.Files.IsInteractive() {
+				return errors.New("no migration provided; supply --in <file> or pipe SQL text")
+			}
 			deps.Logger.Info(cmd, "Opening SQL migration %s. May the DDL be ever in your favor.", path)
 			sql, err := deps.Files.Read(path)
 			if err != nil {

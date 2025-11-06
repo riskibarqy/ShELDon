@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 
 	"github.com/spf13/cobra"
 
@@ -19,6 +20,9 @@ func NewPProfCommand(deps Dependencies) *cobra.Command {
 		Use:   "pprof-analyze",
 		Short: "Analyze a pprof -top output and suggest concrete optimizations",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if (path == "" || path == "-") && deps.Files.IsInteractive() {
+				return errors.New("no pprof data supplied; pipe output or pass --in <file>")
+			}
 			deps.Logger.Info(cmd, "Preparing to interpret pprof output from %s. Performance sins, reveal yourselves.", path)
 			text, err := deps.Files.Read(path)
 			if err != nil {

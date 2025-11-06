@@ -11,11 +11,13 @@ type FileManager interface {
 	Read(path string) (string, error)
 	ReadFile(path string) ([]byte, error)
 	WriteFile(path string, data string) error
+	IsInteractive() bool
 }
 
 // OSFileManager implements FileManager using the host filesystem.
 type OSFileManager struct {
-	Stdin io.Reader
+	Stdin       io.Reader
+	interactive bool
 }
 
 // NewOSFileManager creates a FileManager backed by os package primitives.
@@ -23,7 +25,13 @@ func NewOSFileManager(stdin io.Reader) *OSFileManager {
 	if stdin == nil {
 		stdin = os.Stdin
 	}
-	return &OSFileManager{Stdin: stdin}
+	fm := &OSFileManager{Stdin: stdin}
+	if stdin == os.Stdin {
+		if info, err := os.Stdin.Stat(); err == nil {
+			fm.interactive = info.Mode()&os.ModeCharDevice != 0
+		}
+	}
+	return fm
 }
 
 // Read returns file content or reads from stdin when path is empty or "-".
@@ -45,6 +53,11 @@ func (fm *OSFileManager) ReadFile(path string) ([]byte, error) {
 // WriteFile persists data using 0644 permissions.
 func (fm *OSFileManager) WriteFile(path string, data string) error {
 	return os.WriteFile(path, []byte(data), 0o644)
+}
+
+// IsInteractive reports whether stdin is attached to a terminal.
+func (fm *OSFileManager) IsInteractive() bool {
+	return fm.interactive
 }
 
 func (fm *OSFileManager) readFromStdin() (string, error) {
