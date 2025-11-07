@@ -48,8 +48,9 @@ Expect progress updates on stderr narrated by a particularly opinionated Sheldon
 - **`llm-commit`** – produce a Conventional Commit message from staged changes  
   ```bash
   git add .
-  sheldon llm-commit
+  sheldon llm-commit --prefix "feat(api):" --autocommit
   ```
+  `--prefix` prepends text to the first line, while `--autocommit` tells the CLI to immediately run `git commit -m`.
 
 - **`explain-analyze`** – interpret a PostgreSQL execution plan  
   ```bash

@@ -9,6 +9,7 @@ import (
 // Client abstracts interaction with the git binary.
 type Client interface {
 	Diff(args ...string) (string, error)
+	Commit(message string) error
 }
 
 // CLIClient runs git commands via the local binary.
@@ -25,4 +26,16 @@ func (CLIClient) Diff(args ...string) (string, error) {
 		return "", fmt.Errorf("git diff %v: %w\n%s", args, err, stderr.String())
 	}
 	return string(out), nil
+}
+
+// Commit runs `git commit -m <message>`.
+func (CLIClient) Commit(message string) error {
+	cmd := exec.Command("git", "commit", "-m", message)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &bytes.Buffer{}
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("git commit failed: %w\n%s", err, stderr.String())
+	}
+	return nil
 }

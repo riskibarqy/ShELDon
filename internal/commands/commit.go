@@ -13,7 +13,11 @@ import (
 
 // NewCommitCommand generates a Conventional Commit message using LLM support.
 func NewCommitCommand(deps Dependencies) *cobra.Command {
-	var model string
+	var (
+		model      string
+		prefix     string
+		autoCommit bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "llm-commit",
@@ -39,12 +43,36 @@ func NewCommitCommand(deps Dependencies) *cobra.Command {
 				return err
 			}
 
-			fmt.Fprintln(cmd.OutOrStdout(), strings.TrimSpace(ans))
+			message := applyPrefix(strings.TrimSpace(ans), prefix)
+			fmt.Fprintln(cmd.OutOrStdout(), message)
 			deps.Logger.Info(cmd, "Commit message prepared. Praise can be mailed to apartment 4A.")
+
+			if autoCommit {
+				deps.Logger.Info(cmd, "Executing git commit with the freshly minted prose.")
+				if err := deps.Git.Commit(message); err != nil {
+					return err
+				}
+				deps.Logger.Info(cmd, "Commit recorded. I recommend celebratory string theory.")
+			}
 			return nil
 		},
 	}
 
 	cmd.Flags().StringVar(&model, "model", "", "Override model (default OLDEV_MODEL)")
+	cmd.Flags().StringVar(&prefix, "prefix", "", "Text prepended to the first line of the generated commit message")
+	cmd.Flags().BoolVar(&autoCommit, "autocommit", false, "If true, automatically run git commit with the generated message")
 	return cmd
+}
+
+func applyPrefix(message, prefix string) string {
+	prefix = strings.TrimSpace(prefix)
+	if prefix == "" || message == "" {
+		return message
+	}
+	parts := strings.SplitN(message, "\n", 2)
+	parts[0] = fmt.Sprintf("%s %s", prefix, strings.TrimSpace(parts[0]))
+	if len(parts) == 1 {
+		return parts[0]
+	}
+	return strings.Join(parts, "\n")
 }
