@@ -43,7 +43,7 @@ func NewCommitCommand(deps Dependencies) *cobra.Command {
 				return err
 			}
 
-			message := applyPrefix(strings.TrimSpace(ans), prefix)
+			message := applyPrefix(normalizeCommitMessage(ans), prefix)
 			fmt.Fprintln(cmd.OutOrStdout(), message)
 			deps.Logger.Info(cmd, "Commit message prepared. Praise can be mailed to apartment 4A.")
 
@@ -75,4 +75,39 @@ func applyPrefix(message, prefix string) string {
 		return parts[0]
 	}
 	return strings.Join(parts, "\n")
+}
+
+func normalizeCommitMessage(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return raw
+	}
+	lines := strings.Split(raw, "\n")
+	cleaned := make([]string, 0, len(lines))
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			if len(cleaned) == 0 || cleaned[len(cleaned)-1] == "" {
+				continue
+			}
+			cleaned = append(cleaned, "")
+			continue
+		}
+		lower := strings.ToLower(trimmed)
+		if strings.HasPrefix(lower, "here is") || strings.HasPrefix(lower, "here's") {
+			continue
+		}
+		if strings.HasPrefix(trimmed, "```") || strings.HasSuffix(trimmed, "```") {
+			continue
+		}
+		if strings.HasPrefix(trimmed, "**") && strings.HasSuffix(trimmed, "**") && len(trimmed) > 4 {
+			trimmed = strings.Trim(trimmed, "*")
+			trimmed = strings.TrimSpace(trimmed)
+		}
+		cleaned = append(cleaned, trimmed)
+	}
+	for len(cleaned) > 0 && cleaned[len(cleaned)-1] == "" {
+		cleaned = cleaned[:len(cleaned)-1]
+	}
+	return strings.Join(cleaned, "\n")
 }
