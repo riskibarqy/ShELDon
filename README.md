@@ -6,7 +6,7 @@ ShELDon is a single-binary CLI that wraps local LLM developer workflows powered 
 
 - Go 1.21+ (tested on 1.25)
 - An Ollama instance reachable from your machine
-- Optional: locally downloaded models that match your `OLDEV_MODEL*` choices
+- Optional: locally downloaded models that match your `SHELDON_MODEL*` choices
 
 ## Installation
 
@@ -111,7 +111,7 @@ GOCACHE=$(mktemp -d) go test ./...
 
 ## Project Layout
 
-- `cmd/oldev`: application entrypoint and wiring
+- `cmd/sheldon`: application entrypoint and wiring
 - `internal/app`: Cobra root command and global configuration overrides
 - `internal/commands`: use-case specific command handlers
 - `internal/config`, `internal/llm`, `internal/system`, `internal/git`: infrastructure adapters

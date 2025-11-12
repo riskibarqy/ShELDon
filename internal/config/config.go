@@ -33,11 +33,11 @@ const (
 	defaultModelCoder   = "qwen2.5-coder:1.5b"
 	defaultOllamaHost   = "http://localhost:11434"
 	defaultTimeout      = 120 * time.Second
-	envModelGeneral     = "OLDEV_MODEL"
-	envModelReason      = "OLDEV_MODEL_REASON"
-	envModelCoder       = "OLDEV_MODEL_CODER"
+	envModelGeneral     = "SHELDON_MODEL"
+	envModelReason      = "SHELDON_MODEL_REASON"
+	envModelCoder       = "SHELDON_MODEL_CODER"
 	envOllamaHost       = "OLLAMA_HOST"
-	envTimeout          = "OLDEV_TIMEOUT"
+	envTimeout          = "SHELDON_TIMEOUT"
 )
 
 // Load builds a Config using environment variables with sensible defaults.

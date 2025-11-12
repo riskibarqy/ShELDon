@@ -19,7 +19,7 @@ func NewRootCommand(deps commands.Dependencies) *cobra.Command {
 	)
 
 	root := &cobra.Command{
-		Use:   "oldev",
+		Use:   "sheldon",
 		Short: "Local-LLM dev tools powered by Ollama",
 		Long:  "A Swiss Army CLI to supercharge Go backend work using local LLMs via Ollama.",
 		PersistentPreRun: func(cmd *cobra.Command, _ []string) {

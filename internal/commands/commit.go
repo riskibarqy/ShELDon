@@ -32,7 +32,12 @@ func NewCommitCommand(deps Dependencies) *cobra.Command {
 				return errors.New("no staged changes")
 			}
 
-			prompt := "Write a concise Conventional Commit message for this diff. One-line summary, then bullets of key changes.\n\n" + diff
+			prompt := "Write ONLY a Conventional Commit message for the diff below.\n" +
+				"Format:\n" +
+				"<type(scope)?: >concise summary in lowercase present tense\n" +
+				"- bullet of a key change\n" +
+				"- another bullet (if needed)\n" +
+				"No prefacing text, no explanations, no review commentary.\n\n" + diff
 			ctx, cancel := context.WithTimeout(cmd.Context(), deps.Config.Timeout)
 			defer cancel()
 
@@ -58,7 +63,7 @@ func NewCommitCommand(deps Dependencies) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&model, "model", "", "Override model (default OLDEV_MODEL)")
+	cmd.Flags().StringVar(&model, "model", "", "Override model (default SHELDON_MODEL)")
 	cmd.Flags().StringVar(&prefix, "prefix", "", "Text prepended to the first line of the generated commit message")
 	cmd.Flags().BoolVar(&autoCommit, "autocommit", false, "If true, automatically run git commit with the generated message")
 	return cmd
@@ -95,6 +100,21 @@ func normalizeCommitMessage(raw string) string {
 		}
 		lower := strings.ToLower(trimmed)
 		if strings.HasPrefix(lower, "here is") || strings.HasPrefix(lower, "here's") {
+			continue
+		}
+		bannedPrefixes := []string{
+			"this is a code review",
+			"overall,",
+			"overall:",
+		}
+		skip := false
+		for _, prefix := range bannedPrefixes {
+			if strings.HasPrefix(lower, prefix) {
+				skip = true
+				break
+			}
+		}
+		if skip {
 			continue
 		}
 		if strings.HasPrefix(trimmed, "```") || strings.HasSuffix(trimmed, "```") {

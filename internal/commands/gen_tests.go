@@ -65,6 +65,6 @@ func NewGenTestsCommand(deps Dependencies) *cobra.Command {
 	cmd.Flags().StringVar(&file, "file", "", "Go source file")
 	cmd.Flags().StringVar(&fn, "func", "", "Function name")
 	cmd.Flags().StringVar(&out, "out", "", "Output test filename (default <func>_test.go)")
-	cmd.Flags().StringVar(&model, "model", "", "Override model (default OLDEV_MODEL_REASON)")
+	cmd.Flags().StringVar(&model, "model", "", "Override model (default SHELDON_MODEL_REASON)")
 	return cmd
 }
