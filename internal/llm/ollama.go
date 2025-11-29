@@ -3,10 +3,11 @@ package llm
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // OllamaClient implements Client by calling the Ollama HTTP API.
@@ -36,6 +37,8 @@ type generateResponse struct {
 	Response string `json:"response"`
 	Done     bool   `json:"done"`
 }
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // Generate sends a prompt to Ollama's /api/generate endpoint.
 func (c *OllamaClient) Generate(ctx context.Context, model, prompt string) (string, error) {

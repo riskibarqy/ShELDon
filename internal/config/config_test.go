@@ -20,6 +20,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Timeout != defaultTimeout {
 		t.Fatalf("expected default timeout %s, got %s", defaultTimeout, cfg.Timeout)
 	}
+	if cfg.MaxSummaryLen != defaultMaxSummaryLen {
+		t.Fatalf("expected default MaxSummaryLen %d, got %d", defaultMaxSummaryLen, cfg.MaxSummaryLen)
+	}
 }
 
 func TestLoadOverrides(t *testing.T) {
@@ -37,5 +40,8 @@ func TestLoadOverrides(t *testing.T) {
 	}
 	if cfg.Timeout != 30*time.Second {
 		t.Fatalf("expected timeout override 30s, got %s", cfg.Timeout)
+	}
+	if cfg.MaxSummaryLen != defaultMaxSummaryLen {
+		t.Fatalf("expected default MaxSummaryLen %d, got %d", defaultMaxSummaryLen, cfg.MaxSummaryLen)
 	}
 }

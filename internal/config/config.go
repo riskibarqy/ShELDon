@@ -7,11 +7,12 @@ import (
 
 // Config groups all runtime settings required by the CLI.
 type Config struct {
-	ModelGeneral string
-	ModelReason  string
-	ModelCoder   string
-	OllamaHost   string
-	Timeout      time.Duration
+	ModelGeneral  string
+	ModelReason   string
+	ModelCoder    string
+	OllamaHost    string
+	Timeout       time.Duration
+	MaxSummaryLen int
 }
 
 // EnvReader abstracts environment variable access to support testing.
@@ -28,26 +29,28 @@ func (OSEnvReader) LookupEnv(key string) (string, bool) {
 }
 
 const (
-	defaultModelGeneral = "llama3.1:8b"
-	defaultModelReason  = "deepseek-r1:7b"
-	defaultModelCoder   = "qwen2.5-coder:1.5b"
-	defaultOllamaHost   = "http://localhost:11434"
-	defaultTimeout      = 120 * time.Second
-	envModelGeneral     = "SHELDON_MODEL"
-	envModelReason      = "SHELDON_MODEL_REASON"
-	envModelCoder       = "SHELDON_MODEL_CODER"
-	envOllamaHost       = "OLLAMA_HOST"
-	envTimeout          = "SHELDON_TIMEOUT"
+	defaultModelGeneral  = "llama3.1:8b"
+	defaultModelReason   = "deepseek-r1:7b"
+	defaultModelCoder    = "qwen2.5-coder:1.5b"
+	defaultOllamaHost    = "http://localhost:11434"
+	defaultTimeout       = 120 * time.Second
+	defaultMaxSummaryLen = 72
+	envModelGeneral      = "SHELDON_MODEL"
+	envModelReason       = "SHELDON_MODEL_REASON"
+	envModelCoder        = "SHELDON_MODEL_CODER"
+	envOllamaHost        = "OLLAMA_HOST"
+	envTimeout           = "SHELDON_TIMEOUT"
 )
 
 // Load builds a Config using environment variables with sensible defaults.
 func Load(reader EnvReader) Config {
 	cfg := Config{
-		ModelGeneral: valueOrDefault(reader, envModelGeneral, defaultModelGeneral),
-		ModelReason:  valueOrDefault(reader, envModelReason, defaultModelReason),
-		ModelCoder:   valueOrDefault(reader, envModelCoder, defaultModelCoder),
-		OllamaHost:   valueOrDefault(reader, envOllamaHost, defaultOllamaHost),
-		Timeout:      defaultTimeout,
+		ModelGeneral:  valueOrDefault(reader, envModelGeneral, defaultModelGeneral),
+		ModelReason:   valueOrDefault(reader, envModelReason, defaultModelReason),
+		ModelCoder:    valueOrDefault(reader, envModelCoder, defaultModelCoder),
+		OllamaHost:    valueOrDefault(reader, envOllamaHost, defaultOllamaHost),
+		Timeout:       defaultTimeout,
+		MaxSummaryLen: defaultMaxSummaryLen,
 	}
 
 	if str, ok := reader.LookupEnv(envTimeout); ok && str != "" {
