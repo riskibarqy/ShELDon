@@ -32,12 +32,9 @@ func NewCommitCommand(deps Dependencies) *cobra.Command {
 				return errors.New("no staged changes")
 			}
 
-			prompt := "Write ONLY a Conventional Commit message for the diff below.\n" +
-				"Format:\n" +
-				"<type(scope)?: >concise summary in lowercase present tense\n" +
-				"- bullet of a key change\n" +
-				"- another bullet (if needed)\n" +
-				"No prefacing text, no explanations, no review commentary.\n\n" + diff
+			prompt := "Write ONLY a single-line Conventional Commit message for the diff below.\n" +
+				"Format exactly as `<type(scope)?: >concise summary in lowercase present tense`.\n" +
+				"No bullets, no extra text, no explanations, no review commentary.\n\n" + diff
 			ctx, cancel := context.WithTimeout(cmd.Context(), deps.Config.Timeout)
 			defer cancel()
 

@@ -33,10 +33,6 @@ func NewSheldonLogger() *SheldonLogger {
 		rng: rand.New(rand.NewSource(time.Now().UnixNano())),
 		identity: []string{
 			"Sheldon Cooper",
-			"Dr. Sheldon Cooper",
-			"Professor Cooper",
-			"Sheldon L. Cooper, PhD",
-			"Bazinga Consultant",
 		},
 		prefix: []string{
 			"Observation:",
