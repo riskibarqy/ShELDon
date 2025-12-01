@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/joho/godotenv"
+
 	"github.com/riskiramdan/ShELDon/internal/app"
 	"github.com/riskiramdan/ShELDon/internal/commands"
 	"github.com/riskiramdan/ShELDon/internal/config"
@@ -21,6 +23,9 @@ func main() {
 	// Allow running as `go run . --help` without Cobra parsing flag.CommandLine twice.
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	_ = flag.CommandLine.Parse([]string{})
+
+	// Load overrides from .env when present; ignore missing file errors.
+	_ = godotenv.Load(".env")
 
 	cfg := config.Load(config.OSEnvReader{})
 
