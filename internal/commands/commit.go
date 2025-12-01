@@ -184,7 +184,18 @@ func validateConventionalCommit(s string) bool {
 	if s == "" {
 		return false
 	}
-	return CompiledConventionalCommit.MatchString(s)
+	candidate := s
+	for candidate != "" {
+		if CompiledConventionalCommit.MatchString(candidate) {
+			return true
+		}
+		sep := strings.IndexAny(candidate, " \t")
+		if sep == -1 {
+			break
+		}
+		candidate = strings.TrimSpace(candidate[sep+1:])
+	}
+	return false
 }
 
 // shortenSummaryWithLLM asks the model to shorten a one-line summary.
